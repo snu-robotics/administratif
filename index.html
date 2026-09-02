@@ -56,7 +56,7 @@
     .open-btn:hover{background:#1e293b}
     .open-btn svg{width:15px;height:15px}
     .card-note{font-size:10.5px;color:#94a3b8;text-align:right}
-    .placeholder{background:rgba(255,255,255,.48);border-style:dashed;box-shadow:none}
+    .placeholder{display:none!important}
     .placeholder .app-icon{background:#f1f5f9;color:#94a3b8}
     .placeholder h3{color:#64748b}
     .placeholder .card-desc{color:#94a3b8}
@@ -64,8 +64,24 @@
     .footer-inner{min-height:94px;display:flex;align-items:center;justify-content:space-between;gap:20px;color:#64748b;font-size:11.5px}
     .footer strong{color:#334155}
     .empty{display:none;grid-column:1/-1;padding:50px 20px;text-align:center;color:#94a3b8;background:#fff;border:1px dashed var(--line);border-radius:18px}
-    @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding-top:52px}.toolbar{align-items:flex-end}}
-    @media(max-width:640px){.shell{padding:0 18px}.topbar-inner{height:68px}.brand-sub{display:none}.hero{padding:44px 0 38px}.hero p{font-size:15px}.toolbar{display:block}.search{margin-top:14px;width:100%}.grid{grid-template-columns:1fr}.footer-inner{padding:22px 0;display:block}.footer-inner div+div{margin-top:6px}}
+
+    .category-panel{margin:0 0 34px}
+    .category-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:14px}
+    .category-head h2{font-size:22px;margin:0 0 4px;letter-spacing:-.025em}
+    .category-head p{margin:0;font-size:13px;color:var(--muted)}
+    .category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .category-card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px 16px;min-height:118px;cursor:pointer;transition:.18s;text-align:left}
+    .category-card:hover,.category-card.active{border-color:#93c5fd;box-shadow:0 8px 22px rgba(37,99,235,.08);transform:translateY(-1px)}
+    .category-card.active{background:var(--blue-soft)}
+    .category-kicker{font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--blue);margin-bottom:7px}
+    .category-card h3{font-size:14px;margin:0 0 5px;letter-spacing:-.015em}
+    .category-card p{font-size:11.5px;color:#64748b;margin:0;line-height:1.55}
+    .category-filters{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 18px}
+    .filter-btn{border:1px solid var(--line);background:#fff;color:#475569;border-radius:999px;padding:7px 11px;font-size:11.5px;font-weight:700;cursor:pointer}
+    .filter-btn:hover,.filter-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}
+    .category-label{display:inline-flex;align-items:center;width:max-content;font-size:10px;font-weight:800;color:var(--blue);background:var(--blue-soft);border-radius:7px;padding:4px 7px;margin-top:13px}
+    @media(max-width:900px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding-top:52px}.toolbar{align-items:flex-end}}
+    @media(max-width:640px){.category-grid{grid-template-columns:1fr}.shell{padding:0 18px}.topbar-inner{height:68px}.brand-sub{display:none}.hero{padding:44px 0 38px}.hero p{font-size:15px}.toolbar{display:block}.search{margin-top:14px;width:100%}.grid{grid-template-columns:1fr}.footer-inner{padding:22px 0;display:block}.footer-inner div+div{margin-top:6px}}
   </style>
 </head>
 <body>
@@ -97,11 +113,43 @@
       </div>
     </section>
 
+    <section class="shell category-panel" aria-labelledby="category-title">
+      <div class="category-head">
+        <div>
+          <h2 id="category-title">운영 업무 영역</h2>
+          <p>연구소 업무 분장과 향후 웹앱 확장을 같은 기준으로 관리합니다.</p>
+        </div>
+      </div>
+      <div class="category-grid">
+        <button class="category-card active" type="button" data-category-select="admin">
+          <div class="category-kicker">01 · ADMIN</div><h3>행정 · 커뮤니케이션</h3><p>공지, 업무메일, 대내외 연락, 공문·안내, 반복 행정업무</p>
+        </button>
+        <button class="category-card" type="button" data-category-select="people">
+          <div class="category-kicker">02 · PEOPLE</div><h3>인사 · 구성원</h3><p>참여자 명단, 직책·역할, 신규 구성원, 연락망, 권한 관리</p>
+        </button>
+        <button class="category-card" type="button" data-category-select="schedule">
+          <div class="category-kicker">03 · SCHEDULE</div><h3>회의 · 일정 · 행사</h3><p>회의 일정조율, 참석확인, 행사 운영, 공간·온라인 회의 관리</p>
+        </button>
+        <button class="category-card" type="button" data-category-select="research">
+          <div class="category-kicker">04 · RESEARCH</div><h3>연구과제 · 성과</h3><p>과제 진행, 마일스톤, 제출물, 성과·실적, 연구활동 관리</p>
+        </button>
+        <button class="category-card" type="button" data-category-select="finance">
+          <div class="category-kicker">05 · FINANCE</div><h3>재정 · 구매 · 정산</h3><p>예산, 구매요청, 지출·정산, 증빙, 집행현황 관리</p>
+        </button>
+        <button class="category-card" type="button" data-category-select="facility">
+          <div class="category-kicker">06 · FACILITY</div><h3>시설 · 자산 · 안전</h3><p>공간, 장비·자산, 유지보수, 반출입, 안전점검 및 기록</p>
+        </button>
+        <button class="category-card" type="button" data-category-select="data">
+          <div class="category-kicker">07 · DATA</div><h3>문서 · 데이터</h3><p>템플릿, 문서보관, 자료수합, 아카이브, 공용 데이터 관리</p>
+        </button>
+      </div>
+    </section>
+
     <section class="shell" aria-labelledby="apps-title">
       <div class="toolbar">
         <div class="section-title">
           <h2 id="apps-title">Test Apps</h2>
-          <p>현재 사용 가능한 테스트 도구와 향후 추가될 앱을 한 곳에서 관리합니다.</p>
+          <p>현재 사용 가능한 테스트 도구만 표시합니다. 새 앱이 등록되면 해당 업무 카테고리가 자동으로 나타납니다.</p>
         </div>
         <label class="search" aria-label="앱 검색">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -109,15 +157,26 @@
         </label>
       </div>
 
+      <div class="category-filters" aria-label="업무 카테고리 필터">
+        <button class="filter-btn active" type="button" data-filter="all">전체</button>
+        <button class="filter-btn" type="button" data-filter="admin">행정·커뮤니케이션</button>
+        <button class="filter-btn" type="button" data-filter="people">인사·구성원</button>
+        <button class="filter-btn" type="button" data-filter="schedule">회의·일정·행사</button>
+        <button class="filter-btn" type="button" data-filter="research">연구과제·성과</button>
+        <button class="filter-btn" type="button" data-filter="finance">재정·구매·정산</button>
+        <button class="filter-btn" type="button" data-filter="facility">시설·자산·안전</button>
+        <button class="filter-btn" type="button" data-filter="data">문서·데이터</button>
+      </div>
+
       <div id="appGrid" class="grid">
-        <article class="card active" data-search="업무메일 생성기 메일 이메일 google docs drive 수신자 그룹 직책 직함 템플릿 docx csv excel 조사 자동보정">
+        <article class="card active" data-category="admin" data-search="업무메일 생성기 메일 이메일 google docs drive 수신자 그룹 직책 직함 템플릿 docx csv excel 조사 자동보정">
           <div class="card-top">
             <div class="app-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
             </div>
             <span class="status test">TESTING</span>
           </div>
-          <h3>업무메일 생성기</h3>
+          <div class="category-label">행정 · 커뮤니케이션</div><h3>업무메일 생성기</h3>
           <p class="card-desc">Google Docs 메일 템플릿과 참여자 명단을 연결해 그룹·직책·직함별 수신자를 선택하고, 개인화된 업무메일을 생성하는 테스트 도구입니다.</p>
           <div class="tags">
             <span class="tag">Google Docs</span>
@@ -135,28 +194,46 @@
           </div>
         </article>
 
-        <article class="card placeholder" data-search="추가 예정 new test app coming soon">
-          <div class="card-top">
-            <div class="app-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
-            </div>
-            <span class="status ready">COMING SOON</span>
-          </div>
-          <h3>새 테스트 앱</h3>
-          <p class="card-desc">추가되는 연구·행정 도구를 이 카드 구조에 계속 등록할 수 있습니다. 앱이 늘어나도 동일한 대시보드에서 접근합니다.</p>
-          <div class="tags"><span class="tag">확장 슬롯</span></div>
+        <article class="card placeholder" data-category="people" data-search="인사 구성원 참여자 명단 연락망 직책 역할 권한">
+          <div class="card-top"><div class="app-icon">👥</div><span class="status ready">PLANNED</span></div>
+          <div class="category-label">인사 · 구성원</div><h3>구성원 · 참여자 관리</h3>
+          <p class="card-desc">연구소 구성원과 과제 참여자의 소속, 직함, 직책, 역할, 연락처와 참여상태를 관리하는 도구 영역입니다.</p>
+          <div class="tags"><span class="tag">명단</span><span class="tag">역할</span><span class="tag">연락망</span></div>
         </article>
 
-        <article class="card placeholder" data-search="추가 예정 new test app coming soon">
-          <div class="card-top">
-            <div class="app-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
-            </div>
-            <span class="status ready">COMING SOON</span>
-          </div>
-          <h3>새 테스트 앱</h3>
-          <p class="card-desc">별도 설치 없이 브라우저에서 실행하는 내부용 도구를 순차적으로 추가할 수 있도록 확장 가능한 구조로 구성했습니다.</p>
-          <div class="tags"><span class="tag">확장 슬롯</span></div>
+        <article class="card placeholder" data-category="schedule" data-search="회의 일정 행사 일정조율 참석 공간 zoom 캘린더">
+          <div class="card-top"><div class="app-icon">📅</div><span class="status ready">PLANNED</span></div>
+          <div class="category-label">회의 · 일정 · 행사</div><h3>회의 · 행사 운영</h3>
+          <p class="card-desc">회의 일정조율, 참석확인, 회의실·온라인 링크, 행사 체크리스트와 후속조치를 관리하는 도구 영역입니다.</p>
+          <div class="tags"><span class="tag">일정조율</span><span class="tag">참석확인</span><span class="tag">행사</span></div>
+        </article>
+
+        <article class="card placeholder" data-category="research" data-search="연구과제 성과 실적 마일스톤 제출물 연구활동 보고">
+          <div class="card-top"><div class="app-icon">🧪</div><span class="status ready">PLANNED</span></div>
+          <div class="category-label">연구과제 · 성과</div><h3>과제 · 성과 관리</h3>
+          <p class="card-desc">연구과제별 일정, 마일스톤, 제출자료, 성과·실적과 내부 진행현황을 추적하는 도구 영역입니다.</p>
+          <div class="tags"><span class="tag">과제</span><span class="tag">성과</span><span class="tag">마일스톤</span></div>
+        </article>
+
+        <article class="card placeholder" data-category="finance" data-search="재정 예산 구매 정산 지출 증빙 집행">
+          <div class="card-top"><div class="app-icon">₩</div><span class="status ready">PLANNED</span></div>
+          <div class="category-label">재정 · 구매 · 정산</div><h3>예산 · 구매 · 정산</h3>
+          <p class="card-desc">예산 배정, 구매요청, 집행현황, 증빙수합과 정산 업무를 표준화하는 도구 영역입니다.</p>
+          <div class="tags"><span class="tag">예산</span><span class="tag">구매</span><span class="tag">정산</span></div>
+        </article>
+
+        <article class="card placeholder" data-category="facility" data-search="시설 자산 장비 공간 안전 유지보수 반출입">
+          <div class="card-top"><div class="app-icon">🛠</div><span class="status ready">PLANNED</span></div>
+          <div class="category-label">시설 · 자산 · 안전</div><h3>시설 · 자산 관리</h3>
+          <p class="card-desc">연구공간, 공용장비, 자산대장, 유지보수, 반출입과 안전점검 기록을 관리하는 도구 영역입니다.</p>
+          <div class="tags"><span class="tag">공간</span><span class="tag">장비</span><span class="tag">안전</span></div>
+        </article>
+
+        <article class="card placeholder" data-category="data" data-search="문서 데이터 템플릿 자료수합 아카이브 드라이브 보관">
+          <div class="card-top"><div class="app-icon">🗂</div><span class="status ready">PLANNED</span></div>
+          <div class="category-label">문서 · 데이터</div><h3>문서 · 자료 관리</h3>
+          <p class="card-desc">공용 템플릿, 업무문서, 제출자료, 파일 아카이브와 반복 데이터 수합을 관리하는 도구 영역입니다.</p>
+          <div class="tags"><span class="tag">템플릿</span><span class="tag">아카이브</span><span class="tag">자료수합</span></div>
         </article>
 
         <div id="emptyState" class="empty">검색 조건에 맞는 앱이 없습니다.</div>
@@ -173,19 +250,61 @@
 
   <script>
     const search = document.getElementById('appSearch');
-    const cards = [...document.querySelectorAll('#appGrid .card')];
+    const allCards = [...document.querySelectorAll('#appGrid .card')];
+    const cards = allCards.filter(card => !card.classList.contains('placeholder'));
     const empty = document.getElementById('emptyState');
-    search.addEventListener('input', () => {
+    const filterButtons = [...document.querySelectorAll('.filter-btn')];
+    const categoryCards = [...document.querySelectorAll('.category-card')];
+    let activeCategory = 'all';
+
+    function availableCategories(){
+      return new Set(cards.map(card => card.dataset.category).filter(Boolean));
+    }
+
+    function syncAvailableUI(){
+      const available = availableCategories();
+      categoryCards.forEach(btn => {
+        btn.style.display = available.has(btn.dataset.categorySelect) ? '' : 'none';
+      });
+      filterButtons.forEach(btn => {
+        if(btn.dataset.filter === 'all') return;
+        btn.style.display = available.has(btn.dataset.filter) ? '' : 'none';
+      });
+      allCards.filter(card => card.classList.contains('placeholder')).forEach(card => {
+        card.style.display = 'none';
+      });
+      if(activeCategory !== 'all' && !available.has(activeCategory)) activeCategory = 'all';
+    }
+
+    function applyFilters(){
       const q = search.value.trim().toLowerCase();
       let visible = 0;
       cards.forEach(card => {
-        const text = (card.dataset.search + ' ' + card.innerText).toLowerCase();
-        const show = !q || text.includes(q);
+        const text = ((card.dataset.search || '') + ' ' + card.innerText).toLowerCase();
+        const categoryOk = activeCategory === 'all' || card.dataset.category === activeCategory;
+        const searchOk = !q || text.includes(q);
+        const show = categoryOk && searchOk;
         card.style.display = show ? '' : 'none';
-        if (show) visible++;
+        if(show) visible++;
       });
       empty.style.display = visible ? 'none' : 'block';
-    });
+    }
+
+    function setCategory(category){
+      const available = availableCategories();
+      activeCategory = category === 'all' || available.has(category) ? category : 'all';
+      filterButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.filter === activeCategory));
+      categoryCards.forEach(btn => btn.classList.toggle('active', btn.dataset.categorySelect === activeCategory));
+      applyFilters();
+      document.getElementById('apps-title').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    search.addEventListener('input', applyFilters);
+    filterButtons.forEach(btn => btn.addEventListener('click', () => setCategory(btn.dataset.filter)));
+    categoryCards.forEach(btn => btn.addEventListener('click', () => setCategory(btn.dataset.categorySelect)));
+
+    syncAvailableUI();
+    setCategory('all');
   </script>
 </body>
 </html>
