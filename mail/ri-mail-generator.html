@@ -762,7 +762,7 @@ function setAppMode(mode){
  appModeBasicBtn?.classList.toggle('active',!advanced);appModeAdvancedBtn?.classList.toggle('active',advanced);
  if(templateSourceGrid){templateSourceGrid.classList.toggle('lg:grid-cols-3',advanced)}
  try{localStorage.setItem('snuRiMailAppMode',mode)}catch(_){}
- if(!advanced){state.inputMode='inline';state.entryMode='single';renderInputMode();}
+ if(!advanced){state.inputMode='inline';state.entryMode='single';updateInputModeUI();}
 }
 appModeBasicBtn?.addEventListener('click',()=>setAppMode('basic'));
 appModeAdvancedBtn?.addEventListener('click',()=>setAppMode('advanced'));
