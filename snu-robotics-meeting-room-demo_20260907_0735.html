@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNU ROBOTICS INSTITUTE · Meeting Room Reservation</title>
+<style>
+  :root{
+    --bg:#F7F8FA;
+    --surface:#FFFFFF;
+    --navy:#132A46;
+    --navy-deep:#0C1D33;
+    --blue:#2E5EAA;
+    --blue-soft:#EAF0FA;
+    --ink:#1C2530;
+    --slate:#5B6577;
+    --slate-light:#8A93A3;
+    --line:#E3E7ED;
+    --line-strong:#CBD3DF;
+    --ok:#1E8A5F;
+    --ok-bg:#E6F4EE;
+    --busy:#B23A48;
+    --busy-bg:#FBEAEC;
+    --soon:#B4790A;
+    --soon-bg:#FBF1DF;
+    --radius:6px;
+    --shadow:0 1px 2px rgba(19,42,70,.06), 0 1px 1px rgba(19,42,70,.04);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    font-feature-settings:"tnum" 1;
+  }
+  button{font-family:inherit;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ---------- Header ---------- */
+  header.app-header{
+    background:var(--navy);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 24px;
+    height:60px;
+    position:sticky;
+    top:0;
+    z-index:40;
+  }
+  .brand{display:flex;flex-direction:column;line-height:1.15;}
+  .brand .org{font-size:14px;font-weight:700;letter-spacing:.2px;}
+  .brand .service{font-size:11.5px;color:#AEC0DA;margin-top:1px;}
+  nav.main-nav{display:flex;gap:4px;}
+  nav.main-nav button{
+    background:transparent;border:none;color:#CBD8EC;
+    padding:8px 14px;border-radius:5px;font-size:13.5px;cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  nav.main-nav button:hover{background:rgba(255,255,255,.08);color:#fff;}
+  nav.main-nav button.active{background:rgba(255,255,255,.14);color:#fff;font-weight:600;}
+  .header-right{display:flex;align-items:center;gap:18px;}
+  .header-date{font-size:12.5px;color:#9FB0CB;}
+
+  /* ---------- Layout ---------- */
+  main{max-width:1180px;margin:0 auto;padding:28px 24px 64px;}
+  .page-title{font-size:20px;font-weight:700;margin:0 0 4px;color:var(--navy-deep);}
+  .page-sub{font-size:13.5px;color:var(--slate);margin:0 0 22px;}
+
+  /* ---------- Stat cards ---------- */
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px;}
+  .stat-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;box-shadow:var(--shadow);
+  }
+  .stat-card .num{font-size:26px;font-weight:700;color:var(--navy-deep);}
+  .stat-card .label{font-size:12.5px;color:var(--slate);margin-top:3px;}
+
+  /* ---------- Section heading ---------- */
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin:30px 0 12px;}
+  .section-head h2{font-size:15px;font-weight:700;color:var(--navy-deep);margin:0;}
+  .section-head .hint{font-size:12px;color:var(--slate-light);}
+
+  /* ---------- Room cards ---------- */
+  .room-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .room-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;cursor:pointer;box-shadow:var(--shadow);
+    border-left:3px solid var(--line-strong);
+    transition:box-shadow .15s ease, transform .15s ease;
+  }
+  .room-card:hover{box-shadow:0 4px 14px rgba(19,42,70,.10);transform:translateY(-1px);}
+  .room-card.status-available{border-left-color:var(--ok);}
+  .room-card.status-inuse{border-left-color:var(--busy);}
+  .room-card.status-upcoming{border-left-color:var(--soon);}
+  .room-card .rc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .room-card .rc-name{font-size:14.5px;font-weight:700;color:var(--ink);}
+  .badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:600;}
+  .badge.status-available{background:var(--ok-bg);color:var(--ok);}
+  .badge.status-inuse{background:var(--busy-bg);color:var(--busy);}
+  .badge.status-upcoming{background:var(--soon-bg);color:var(--soon);}
+  .room-card .rc-meta{font-size:12px;color:var(--slate);margin-bottom:10px;}
+  .room-card .rc-equip{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+  .chip{font-size:11px;background:var(--blue-soft);color:var(--blue);padding:2px 8px;border-radius:4px;}
+  .room-card .rc-now{font-size:12px;color:var(--ink);border-top:1px solid var(--line);padding-top:10px;}
+  .room-card .rc-now .k{color:var(--slate-light);}
+  .room-card .rc-now .v{font-weight:600;}
+
+  /* ---------- Today schedule list ---------- */
+  .today-list{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+  .today-item{display:flex;gap:16px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s ease;}
+  .today-item:last-child{border-bottom:none;}
+  .today-item:hover{background:#FAFBFD;}
+  .today-item .ti-time{width:112px;font-size:12.5px;color:var(--slate);flex-shrink:0;}
+  .today-item .ti-time b{color:var(--ink);font-weight:600;}
+  .today-item .ti-main{flex:1;}
+  .today-item .ti-title{font-size:13.5px;font-weight:600;color:var(--ink);}
+  .today-item .ti-room{font-size:12px;color:var(--slate-light);margin-top:2px;}
+  .empty-note{padding:20px;font-size:13px;color:var(--slate-light);text-align:center;}
+
+  /* ---------- Schedule view: date nav ---------- */
+  .date-nav{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+  .date-nav .nb{
+    background:var(--surface);border:1px solid var(--line);color:var(--ink);
+    padding:7px 13px;border-radius:5px;font-size:13px;cursor:pointer;
+  }
+  .date-nav .nb:hover{border-color:var(--line-strong);}
+  .date-nav .nb.primary{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .date-nav .current-date{font-size:14.5px;font-weight:700;color:var(--navy-deep);margin-left:6px;}
+  .date-nav select{
+    border:1px solid var(--line);border-radius:5px;padding:6px 10px;font-size:13px;color:var(--ink);background:#fff;
+  }
+
+  /* ---------- Timeline ---------- */
+  .timeline-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto;}
+  .timeline{display:grid;grid-template-columns:140px repeat(13,72px);min-width:1076px;}
+  .tl-head-cell{padding:10px 8px;font-size:11px;color:var(--slate-light);text-align:center;border-bottom:1px solid var(--line);border-left:1px solid var(--line);}
+  .tl-head-corner{border-bottom:1px solid var(--line);}
+  .tl-room-label{padding:14px 14px;font-size:13px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;}
+  .tl-room-label .cap{font-size:11px;font-weight:400;color:var(--slate-light);margin-top:2px;}
+  .tl-cell{border-left:1px solid var(--line);border-bottom:1px solid var(--line);position:relative;height:58px;}
+  .tl-block{
+    position:absolute;top:5px;bottom:5px;background:var(--blue);color:#fff;border-radius:4px;
+    padding:5px 7px;font-size:11px;line-height:1.25;overflow:hidden;cursor:pointer;
+    box-shadow:0 1px 3px rgba(19,42,70,.25);
+  }
+  .tl-block:hover{filter:brightness(1.08);}
+  .tl-block .b-title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tl-block .b-time{opacity:.85;font-size:10px;}
+
+  /* ---------- Room list (Rooms tab) ---------- */
+  .room-list-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+
+  /* ---------- Room detail ---------- */
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--blue);cursor:pointer;margin-bottom:14px;}
+  .detail-head{display:flex;justify-content:space-between;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);margin-bottom:22px;}
+  .detail-head h1{font-size:19px;margin:0 0 6px;color:var(--navy-deep);}
+  .detail-meta-row{display:flex;gap:24px;margin-top:12px;}
+  .detail-meta-row .dm{font-size:12px;color:var(--slate-light);}
+  .detail-meta-row .dm b{display:block;font-size:14px;color:var(--ink);font-weight:600;margin-top:2px;}
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(12,22,40,.45);display:flex;align-items:center;justify-content:center;z-index:80;}
+  .modal{background:#fff;width:420px;max-width:92vw;border-radius:8px;box-shadow:0 20px 60px rgba(12,22,40,.35);overflow:hidden;}
+  .modal-head{background:var(--navy);color:#fff;padding:16px 20px;}
+  .modal-head .mh-title{font-size:15.5px;font-weight:700;}
+  .modal-head .mh-room{font-size:12px;color:#AEC0DA;margin-top:2px;}
+  .modal-body{padding:18px 20px;}
+  .modal-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .modal-row:last-child{border-bottom:none;}
+  .modal-row .k{color:var(--slate-light);}
+  .modal-row .v{color:var(--ink);font-weight:600;text-align:right;max-width:62%;}
+  .modal-foot{padding:14px 20px;display:flex;justify-content:flex-end;border-top:1px solid var(--line);}
+  .modal-foot button{background:var(--ink);color:#fff;border:none;padding:8px 18px;border-radius:5px;font-size:13px;cursor:pointer;}
+  .modal-foot button:hover{background:#000;}
+
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:22px 24px;text-align:center;}
+  footer .f-org{font-size:12.5px;font-weight:700;color:var(--navy-deep);}
+  footer .f-sub{font-size:11.5px;color:var(--slate-light);margin-top:2px;}
+  footer .f-contact{font-size:11px;color:var(--slate-light);margin-top:10px;}
+
+  @media (max-width:900px){
+    .stat-row{grid-template-columns:repeat(2,1fr);}
+    .room-grid,.room-list-grid{grid-template-columns:1fr;}
+    nav.main-nav button{padding:8px 10px;font-size:12.5px;}
+    .brand .service{display:none;}
+  }
+  @media (max-width:640px){
+    .today-item .ti-time{width:84px;}
+    main{padding:20px 14px 50px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="org">SNU ROBOTICS INSTITUTE</div>
+    <div class="service">Meeting Room Reservation System</div>
+  </div>
+  <div class="header-right">
+    <nav class="main-nav">
+      <button data-nav="dashboard">Today</button>
+      <button data-nav="rooms">Rooms</button>
+      <button data-nav="schedule">Schedule</button>
+    </nav>
+    <div class="header-date" id="headerDate"></div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  <div class="f-org">SNU ROBOTICS INSTITUTE</div>
+  <div class="f-sub">Meeting Room Reservation System</div>
+  <div class="f-contact">Contact</div>
+</footer>
+
+<div id="modalRoot"></div>
+
+<script>
+/* =========================================================
+   DATA LAYER  (demo mock data — designed to be swapped later
+   for /data/rooms.ts + /data/reservations.ts or a real API
+   call through /services/roomService.ts, reservationService.ts)
+   ========================================================= */
+
+const ROOMS = [
+  { id:'A', name:'A Meeting Room', capacity:4,  location:'2F',  equipment:['Monitor','Video Conference'], active:true },
+  { id:'B', name:'B Meeting Room', capacity:8,  location:'2F',  equipment:['Large Display','Whiteboard','Video Conference'], active:true },
+  { id:'C', name:'C Meeting Room', capacity:12, location:'3F',  equipment:['Projector','Whiteboard','Video Conference'], active:true },
+  { id:'CONF', name:'Conference Room', capacity:30, location:'1F', equipment:['Beam Projector','Audio System','Video Conference'], active:true },
+];
+
+function pad(n){ return n<10 ? '0'+n : ''+n; }
+function dateKeyForOffset(offset){
+  const d = new Date();
+  d.setDate(d.getDate()+offset);
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function todayKey(){ return dateKeyForOffset(0); }
+
+// [{ offset, roomId, title, department, startTime, endTime, attendeeCount, purpose }]
+const RAW_RESERVATIONS = [
+  // --- offset -2 ---
+  { offset:-2, roomId:'A', title:'Weekly Robotics Meeting', department:'Robot Control Team', startTime:'10:00', endTime:'11:00', attendeeCount:6, purpose:'Weekly progress sync for the robot control subsystem.' },
+  { offset:-2, roomId:'B', title:'Project Review', department:'Autonomous Systems Lab', startTime:'13:30', endTime:'15:00', attendeeCount:8, purpose:'Milestone review of the autonomous navigation module.' },
+  { offset:-2, roomId:'C', title:'Lab Coordination Meeting', department:'Institute Administration', startTime:'09:00', endTime:'09:30', attendeeCount:4, purpose:'Weekly lab logistics and space coordination.' },
+
+  // --- offset -1 ---
+  { offset:-1, roomId:'A', title:'Weekly Robotics Meeting', department:'Robot Control Team', startTime:'09:00', endTime:'10:00', attendeeCount:6, purpose:'Weekly progress sync for the robot control subsystem.' },
+  { offset:-1, roomId:'B', title:'Autonomous Robot Project Meeting', department:'Autonomous Systems Lab', startTime:'11:00', endTime:'12:30', attendeeCount:9, purpose:'Sprint planning for the autonomous robot project.' },
+  { offset:-1, roomId:'C', title:'AI & Robotics Seminar', department:'AI Robotics Group', startTime:'14:00', endTime:'15:00', attendeeCount:12, purpose:'Guest talk on reinforcement learning for manipulation.' },
+  { offset:-1, roomId:'A', title:'Robot Manipulation Research Meeting', department:'Manipulation Research Lab', startTime:'15:00', endTime:'16:00', attendeeCount:5, purpose:'Discussion of gripper design test results.' },
+  { offset:-1, roomId:'CONF', title:'External Research Meeting', department:'External Partner', startTime:'10:00', endTime:'11:30', attendeeCount:14, purpose:'Joint research review with an external partner institute.' },
+
+  // --- offset 0 (today) ---
+  { offset:0, roomId:'C', title:'Lab Coordination Meeting', department:'Institute Administration', startTime:'08:30', endTime:'09:00', attendeeCount:4, purpose:'Weekly lab logistics and space coordination.' },
+  { offset:0, roomId:'A', title:'Weekly Robotics Meeting', department:'Robot Control Team', startTime:'09:00', endTime:'10:00', attendeeCount:6, purpose:'Weekly progress sync for the robot control subsystem.' },
+  { offset:0, roomId:'B', title:'Autonomous Robot Project Meeting', department:'Autonomous Systems Lab', startTime:'10:30', endTime:'12:00', attendeeCount:9, purpose:'Sprint planning for the autonomous robot project.' },
+  { offset:0, roomId:'A', title:'Robot Manipulation Research Meeting', department:'Manipulation Research Lab', startTime:'11:00', endTime:'12:00', attendeeCount:5, purpose:'Discussion of gripper design test results.' },
+  { offset:0, roomId:'CONF', title:'Institute Seminar', department:'Institute Administration', startTime:'13:00', endTime:'14:30', attendeeCount:22, purpose:'Monthly institute-wide research seminar.' },
+  { offset:0, roomId:'B', title:'Demo Preparation Meeting', department:'AI Robotics Group', startTime:'14:00', endTime:'15:00', attendeeCount:6, purpose:'Preparing the demo for the upcoming site visit.' },
+  { offset:0, roomId:'C', title:'Research Collaboration Meeting', department:'Industry-Academia Collaboration Team', startTime:'15:00', endTime:'16:00', attendeeCount:7, purpose:'Coordination meeting with an industry research partner.' },
+  { offset:0, roomId:'A', title:'Project Review', department:'Autonomous Systems Lab', startTime:'16:30', endTime:'17:30', attendeeCount:8, purpose:'Milestone review of the autonomous navigation module.' },
+
+  // --- offset +1 ---
+  { offset:1, roomId:'A', title:'Weekly Robotics Meeting', department:'Robot Control Team', startTime:'09:30', endTime:'10:30', attendeeCount:6, purpose:'Weekly progress sync for the robot control subsystem.' },
+  { offset:1, roomId:'B', title:'AI & Robotics Seminar', department:'AI Robotics Group', startTime:'13:00', endTime:'14:00', attendeeCount:12, purpose:'Guest talk on reinforcement learning for manipulation.' },
+  { offset:1, roomId:'CONF', title:'External Research Meeting', department:'External Partner', startTime:'15:00', endTime:'16:30', attendeeCount:14, purpose:'Joint research review with an external partner institute.' },
+
+  // --- offset +2 ---
+  { offset:2, roomId:'A', title:'Robot Manipulation Research Meeting', department:'Manipulation Research Lab', startTime:'10:00', endTime:'11:00', attendeeCount:5, purpose:'Discussion of gripper design test results.' },
+  { offset:2, roomId:'C', title:'Lab Coordination Meeting', department:'Institute Administration', startTime:'11:30', endTime:'12:30', attendeeCount:4, purpose:'Weekly lab logistics and space coordination.' },
+  { offset:2, roomId:'B', title:'Demo Preparation Meeting', department:'AI Robotics Group', startTime:'14:00', endTime:'15:30', attendeeCount:6, purpose:'Preparing the demo for the upcoming site visit.' },
+  { offset:2, roomId:'A', title:'Project Review', department:'Autonomous Systems Lab', startTime:'16:00', endTime:'17:00', attendeeCount:8, purpose:'Milestone review of the autonomous navigation module.' },
+];
+
+// Build a lookup: { 'YYYY-MM-DD': [reservation,...] }
+const RESERVATIONS = {};
+let _idCounter = 1;
+RAW_RESERVATIONS.forEach(r=>{
+  const key = dateKeyForOffset(r.offset);
+  const entry = {
+    id:'R'+(_idCounter++),
+    roomId:r.roomId,
+    title:r.title,
+    organizer:r.department,
+    department:r.department,
+    date:key,
+    startTime:r.startTime,
+    endTime:r.endTime,
+    attendeeCount:r.attendeeCount,
+    purpose:r.purpose,
+    status:'confirmed'
+  };
+  if(!RESERVATIONS[key]) RESERVATIONS[key]=[];
+  RESERVATIONS[key].push(entry);
+});
+Object.values(RESERVATIONS).forEach(list=>list.sort((a,b)=> a.startTime.localeCompare(b.startTime)));
+
+/* =========================================================
+   SERVICE LAYER (mock now, API-ready later)
+   ========================================================= */
+const roomService = {
+  getAll(){ return ROOMS.filter(r=>r.active); },
+  getById(id){ return ROOMS.find(r=>r.id===id); },
+};
+const reservationService = {
+  getByDate(dateKey){ return RESERVATIONS[dateKey] || []; },
+  getByRoomAndDate(roomId, dateKey){ return this.getByDate(dateKey).filter(r=>r.roomId===roomId); },
+  getById(id){
+    for(const key in RESERVATIONS){ const found=RESERVATIONS[key].find(r=>r.id===id); if(found) return found; }
+    return null;
+  }
+};
+
+/* =========================================================
+   APP STATE
+   ========================================================= */
+const state = {
+  view:'dashboard',          // dashboard | rooms | schedule | roomDetail
+  scheduleDateOffset:0,
+  selectedRoomId:null,
+  modalReservationId:null,
+};
+
+const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+
+function timeToMinutes(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function minutesToLabel(mins){
+  const now=new Date(); now.setHours(0,0,0,0); now.setMinutes(mins);
+  return now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+}
+function formatDateKeyLong(key){
+  const [y,m,d]=key.split('-').map(Number);
+  const dt=new Date(y,m-1,d);
+  return dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+function formatDateKeyShort(key){
+  const [y,m,d]=key.split('-').map(Number);
+  const dt=new Date(y,m-1,d);
+  return dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
+
+/* Compute live status of a room for TODAY based on real current time */
+function getRoomLiveStatus(roomId){
+  const today = todayKey();
+  const list = reservationService.getByRoomAndDate(roomId, today);
+  const now = new Date();
+  const nowMin = now.getHours()*60+now.getMinutes();
+  let current=null, next=null;
+  for(const r of list){
+    const s=timeToMinutes(r.startTime), e=timeToMinutes(r.endTime);
+    if(nowMin>=s && nowMin<e){ current=r; }
+    if(s>nowMin && (!next || s<timeToMinutes(next.startTime))){ next=r; }
+  }
+  let status='available';
+  if(current) status='inuse';
+  else if(next && timeToMinutes(next.startTime)-nowMin<=60) status='upcoming';
+  return { status, current, next };
+}
+
+/* =========================================================
+   RENDERING
+   ========================================================= */
+const app = document.getElementById('app');
+const modalRoot = document.getElementById('modalRoot');
+
+function setView(view, opts={}){
+  state.view = view;
+  if(opts.roomId!==undefined) state.selectedRoomId = opts.roomId;
+  if(opts.offset!==undefined) state.scheduleDateOffset = opts.offset;
+  render();
+}
+function openMeetingModal(id){ state.modalReservationId=id; renderModal(); }
+function closeMeetingModal(){ state.modalReservationId=null; renderModal(); }
+
+function statusLabel(status){
+  return status==='inuse' ? 'In Use' : status==='upcoming' ? 'Upcoming' : 'Available';
+}
+
+function render(){
+  document.querySelectorAll('.main-nav button').forEach(b=>{
+    const tab = b.getAttribute('data-nav');
+    const activeTab = state.view==='roomDetail' ? 'rooms' : state.view;
+    b.classList.toggle('active', tab===activeTab);
+  });
+  document.getElementById('headerDate').textContent = formatDateKeyLong(todayKey());
+
+  if(state.view==='dashboard') app.innerHTML = renderDashboard();
+  else if(state.view==='rooms') app.innerHTML = renderRoomsList();
+  else if(state.view==='schedule') app.innerHTML = renderSchedule();
+  else if(state.view==='roomDetail') app.innerHTML = renderRoomDetail(state.selectedRoomId);
+
+  attachEvents();
+}
+
+function renderDashboard(){
+  const today = todayKey();
+  const todays = reservationService.getByDate(today);
+  const rooms = roomService.getAll();
+  const liveStatuses = {};
+  rooms.forEach(r=> liveStatuses[r.id]=getRoomLiveStatus(r.id));
+  const inUseCount = rooms.filter(r=>liveStatuses[r.id].status==='inuse').length;
+  const availableCount = rooms.length - inUseCount;
+
+  return `
+    <h1 class="page-title">Today's Overview</h1>
+    <p class="page-sub">${formatDateKeyLong(today)}</p>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="num">${rooms.length}</div><div class="label">Total Rooms</div></div>
+      <div class="stat-card"><div class="num">${inUseCount}</div><div class="label">Currently In Use</div></div>
+      <div class="stat-card"><div class="num">${todays.length}</div><div class="label">Meetings Today</div></div>
+      <div class="stat-card"><div class="num">${availableCount}</div><div class="label">Currently Available</div></div>
+    </div>
+
+    <div class="section-head"><h2>Room Status</h2><span class="hint">Updated in real time</span></div>
+    <div class="room-grid">
+      ${rooms.map(r=>renderRoomCard(r, liveStatuses[r.id])).join('')}
+    </div>
+
+    <div class="section-head"><h2>Today's Schedule</h2><span class="hint">${todays.length} meeting${todays.length===1?'':'s'}</span></div>
+    <div class="today-list">
+      ${ todays.length===0 ? '<div class="empty-note">No meetings scheduled today.</div>' :
+        todays.map(r=>`
+          <div class="today-item" data-open-meeting="${r.id}">
+            <div class="ti-time"><b>${minutesToLabel(timeToMinutes(r.startTime))}</b> – ${minutesToLabel(timeToMinutes(r.endTime))}</div>
+            <div class="ti-main">
+              <div class="ti-title">${r.title}</div>
+              <div class="ti-room">${roomService.getById(r.roomId).name}</div>
+            </div>
+          </div>
+        `).join('')
+      }
+    </div>
+  `;
+}
+
+function renderRoomCard(room, live){
+  const cls = 'status-'+live.status;
+  return `
+    <div class="room-card ${cls}" data-open-room="${room.id}">
+      <div class="rc-top">
+        <div class="rc-name">${room.name}</div>
+        <span class="badge ${cls}">${statusLabel(live.status)}</span>
+      </div>
+      <div class="rc-meta">Capacity ${room.capacity} · ${room.location}</div>
+      <div class="rc-equip">${room.equipment.map(e=>`<span class="chip">${e}</span>`).join('')}</div>
+      <div class="rc-now">
+        ${ live.current
+          ? `<span class="k">Now:</span> <span class="v">${live.current.title}</span>`
+          : live.next
+            ? `<span class="k">Next:</span> <span class="v">${minutesToLabel(timeToMinutes(live.next.startTime))} · ${live.next.title}</span>`
+            : `<span class="k">No further meetings today</span>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function renderRoomsList(){
+  const rooms = roomService.getAll();
+  const today = todayKey();
+  return `
+    <h1 class="page-title">Rooms</h1>
+    <p class="page-sub">${rooms.length} rooms in SNU ROBOTICS INSTITUTE</p>
+    <div class="room-list-grid">
+      ${rooms.map(r=>renderRoomCard(r, getRoomLiveStatus(r.id))).join('')}
+    </div>
+  `;
+}
+
+function renderSchedule(){
+  const offset = state.scheduleDateOffset;
+  const key = dateKeyForOffset(offset);
+  const rooms = roomService.getAll();
+  const dayReservations = reservationService.getByDate(key);
+
+  const startMin = timeToMinutes(TIME_SLOTS[0]);
+  const totalMin = timeToMinutes('21:00') - startMin;
+
+  const rows = rooms.map(room=>{
+    const cells = TIME_SLOTS.map(()=> `<div class="tl-cell"></div>`).join('');
+    const blocks = dayReservations.filter(r=>r.roomId===room.id).map(r=>{
+      const s = timeToMinutes(r.startTime), e = timeToMinutes(r.endTime);
+      const leftPct = ((s-startMin)/totalMin)*100;
+      const widthPct = ((e-s)/totalMin)*100;
+      return `<div class="tl-block" style="left:calc(140px + ${leftPct}% * (100% - 140px) / 100); width:calc(${widthPct}% * (100% - 140px) / 100);" data-open-meeting="${r.id}">
+        <div class="b-title">${r.title}</div>
+        <div class="b-time">${r.startTime}–${r.endTime}</div>
+      </div>`;
+    }).join('');
+    return { room, cells, blocks };
+  });
+
+  return `
+    <h1 class="page-title">Daily Schedule</h1>
+    <p class="page-sub">Room availability across the day</p>
+
+    <div class="date-nav">
+      <button class="nb" data-schedule-nav="prev">‹ Previous</button>
+      <button class="nb primary" data-schedule-nav="today">Today</button>
+      <button class="nb" data-schedule-nav="next">Next ›</button>
+      <select data-schedule-select>
+        ${[-2,-1,0,1,2].map(o=>`<option value="${o}" ${o===offset?'selected':''}>${formatDateKeyShort(dateKeyForOffset(o))}</option>`).join('')}
+      </select>
+      <span class="current-date">${formatDateKeyLong(key)}</span>
+    </div>
+
+    <div class="timeline-wrap">
+      <div class="timeline">
+        <div class="tl-head-corner"></div>
+        ${TIME_SLOTS.map(t=>`<div class="tl-head-cell">${t}</div>`).join('')}
+        ${rows.map(row=>`
+          <div class="tl-room-label">${row.room.name}<span class="cap">Capacity ${row.room.capacity}</span></div>
+          <div style="grid-column: 2 / span ${TIME_SLOTS.length}; display:grid; grid-template-columns:repeat(${TIME_SLOTS.length},72px); position:relative;">
+            ${row.cells}
+            <div style="position:absolute;inset:0;">${row.blocks}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderRoomDetail(roomId){
+  const room = roomService.getById(roomId);
+  if(!room) return `<p>Room not found.</p>`;
+  const today = todayKey();
+  const live = getRoomLiveStatus(roomId);
+  const todays = reservationService.getByRoomAndDate(roomId, today);
+  const selKey = dateKeyForOffset(state.scheduleDateOffset);
+  const selected = reservationService.getByRoomAndDate(roomId, selKey);
+
+  const listBlock = (list)=> list.length===0
+    ? `<div class="empty-note">No meetings scheduled.</div>`
+    : list.map(r=>`
+        <div class="today-item" data-open-meeting="${r.id}">
+          <div class="ti-time"><b>${r.startTime}</b> – ${r.endTime}</div>
+          <div class="ti-main"><div class="ti-title">${r.title}</div><div class="ti-room">${r.department}</div></div>
+        </div>`).join('');
+
+  return `
+    <span class="back-link" data-nav="rooms">‹ Back to Rooms</span>
+    <div class="detail-head">
+      <div>
+        <h1>${room.name}</h1>
+        <span class="badge status-${live.status}">${statusLabel(live.status)}</span>
+        <div class="detail-meta-row">
+          <div class="dm">Capacity<b>${room.capacity}</b></div>
+          <div class="dm">Location<b>${room.location}</b></div>
+          <div class="dm">Equipment<b>${room.equipment.join(', ')}</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Today's Schedule</h2><span class="hint">${formatDateKeyShort(today)}</span></div>
+    <div class="today-list">${listBlock(todays)}</div>
+
+    <div class="section-head"><h2>Selected Date</h2>
+      <select data-roomdetail-select>
+        ${[-2,-1,0,1,2].map(o=>`<option value="${o}" ${o===state.scheduleDateOffset?'selected':''}>${formatDateKeyShort(dateKeyForOffset(o))}</option>`).join('')}
+      </select>
+    </div>
+    <div class="today-list">${listBlock(selected)}</div>
+  `;
+}
+
+function renderModal(){
+  if(!state.modalReservationId){ modalRoot.innerHTML=''; return; }
+  const r = reservationService.getById(state.modalReservationId);
+  if(!r){ modalRoot.innerHTML=''; return; }
+  const room = roomService.getById(r.roomId);
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop" data-close-modal="1">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-head">
+          <div class="mh-title">${r.title}</div>
+          <div class="mh-room">${room.name}</div>
+        </div>
+        <div class="modal-body">
+          <div class="modal-row"><span class="k">Meeting</span><span class="v">${r.title}</span></div>
+          <div class="modal-row"><span class="k">Room</span><span class="v">${room.name}</span></div>
+          <div class="modal-row"><span class="k">Date</span><span class="v">${formatDateKeyLong(r.date)}</span></div>
+          <div class="modal-row"><span class="k">Time</span><span class="v">${r.startTime} – ${r.endTime}</span></div>
+          <div class="modal-row"><span class="k">Organizer</span><span class="v">${r.organizer}</span></div>
+          <div class="modal-row"><span class="k">Attendees</span><span class="v">${r.attendeeCount}</span></div>
+          <div class="modal-row"><span class="k">Purpose</span><span class="v">${r.purpose}</span></div>
+        </div>
+        <div class="modal-foot"><button data-close-modal="1">Close</button></div>
+      </div>
+    </div>
+  `;
+  modalRoot.querySelectorAll('[data-close-modal]').forEach(el=>el.addEventListener('click', closeMeetingModal));
+}
+
+function attachEvents(){
+  app.querySelectorAll('[data-open-room]').forEach(el=>{
+    el.addEventListener('click', ()=> setView('roomDetail', {roomId: el.getAttribute('data-open-room')}));
+  });
+  app.querySelectorAll('[data-open-meeting]').forEach(el=>{
+    el.addEventListener('click', (e)=>{ e.stopPropagation(); openMeetingModal(el.getAttribute('data-open-meeting')); });
+  });
+  app.querySelectorAll('[data-nav]').forEach(el=>{
+    el.addEventListener('click', ()=> setView(el.getAttribute('data-nav')));
+  });
+  const schedNav = app.querySelector('[data-schedule-nav="prev"]');
+  if(schedNav) schedNav.addEventListener('click', ()=> setView('schedule',{offset:Math.max(-2,state.scheduleDateOffset-1)}));
+  const schedNext = app.querySelector('[data-schedule-nav="next"]');
+  if(schedNext) schedNext.addEventListener('click', ()=> setView('schedule',{offset:Math.min(2,state.scheduleDateOffset+1)}));
+  const schedToday = app.querySelector('[data-schedule-nav="today"]');
+  if(schedToday) schedToday.addEventListener('click', ()=> setView('schedule',{offset:0}));
+  const schedSelect = app.querySelector('[data-schedule-select]');
+  if(schedSelect) schedSelect.addEventListener('change', (e)=> setView('schedule',{offset:parseInt(e.target.value,10)}));
+  const roomDetailSelect = app.querySelector('[data-roomdetail-select]');
+  if(roomDetailSelect) roomDetailSelect.addEventListener('change',(e)=>{ state.scheduleDateOffset=parseInt(e.target.value,10); render(); });
+}
+
+document.querySelectorAll('nav.main-nav button').forEach(b=>{
+  b.addEventListener('click', ()=> setView(b.getAttribute('data-nav')));
+});
+
+render();
+setInterval(()=>{ if(state.view==='dashboard') render(); }, 60000);
+</script>
+</body>
+</html>
